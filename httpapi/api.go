@@ -33,7 +33,7 @@ var ErrApiNotFound = errors.New("ipfs api address could not be found")
 // https://godoc.org/github.com/ipfs/interface-go-ipfs-core#CoreAPI
 type HttpApi struct {
 	url         string
-	httpcli     http.Client
+	httpCli     http.Client
 	Headers     http.Header
 	applyGlobal func(*requestBuilder)
 }
@@ -53,9 +53,9 @@ func NewLocalApi() (*HttpApi, error) {
 }
 
 // NewPathApi constructs new HttpApi by pulling api address from specified
-// ipfspath. Api file should be located at $ipfspath/api
-func NewPathApi(ipfspath string) (*HttpApi, error) {
-	a, err := ApiAddr(ipfspath)
+// ipfsPath. Api file should be located at $ipfspath/api
+func NewPathApi(ipfsPath string) (*HttpApi, error) {
+	a, err := ApiAddr(ipfsPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			err = ErrApiNotFound
@@ -66,8 +66,8 @@ func NewPathApi(ipfspath string) (*HttpApi, error) {
 }
 
 // ApiAddr reads api file in specified ipfs path
-func ApiAddr(ipfspath string) (ma.Multiaddr, error) {
-	baseDir, err := homedir.Expand(ipfspath)
+func ApiAddr(ipfsPath string) (ma.Multiaddr, error) {
+	baseDir, err := homedir.Expand(ipfsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -114,13 +114,13 @@ func NewApiWithClient(a ma.Multiaddr, c *http.Client) (*HttpApi, error) {
 func NewURLApiWithClient(url string, c *http.Client) (*HttpApi, error) {
 	api := &HttpApi{
 		url:         url,
-		httpcli:     *c,
+		httpCli:     *c,
 		Headers:     make(map[string][]string),
 		applyGlobal: func(*requestBuilder) {},
 	}
 
 	// We don't support redirects.
-	api.httpcli.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+	api.httpCli.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
 		return fmt.Errorf("unexpected redirect")
 	}
 	return api, nil
