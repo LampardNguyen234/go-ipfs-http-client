@@ -61,8 +61,112 @@ func (api *UnixfsAPI) Add(ctx context.Context, f files.Node, opts ...caopts.Unix
 		req.Option("trickle", true)
 	}
 
-	d := files.NewMapDirectory(map[string]files.Node{"": f}) // unwrapped on the other side
+	var d files.Directory
+	if nf, ok := f.(*Node); ok {
+		d = files.NewMapDirectory(map[string]files.Node{nf.name: nf.Node})
+	} else {
+		d = files.NewMapDirectory(map[string]files.Node{"": f}) // unwrapped on the other side
+	}
 	req.Body(files.NewMultiFileReader(d, false))
+
+	var out addEvent
+	resp, err := req.Send(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Error != nil {
+		return nil, resp.Error
+	}
+	defer resp.Output.Close()
+	dec := json.NewDecoder(resp.Output)
+loop:
+	for {
+		var evt addEvent
+		switch err := dec.Decode(&evt); err {
+		case nil:
+		case io.EOF:
+			break loop
+		default:
+			return nil, err
+		}
+		out = evt
+
+		if options.Events != nil {
+			ifevt := &iface.AddEvent{
+				Name:  out.Name,
+				Size:  out.Size,
+				Bytes: out.Bytes,
+			}
+
+			if out.Hash != "" {
+				c, err := cid.Parse(out.Hash)
+				if err != nil {
+					return nil, err
+				}
+
+				ifevt.Path = path.IpfsPath(c)
+			}
+
+			select {
+			case options.Events <- ifevt:
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+		}
+	}
+
+	c, err := cid.Parse(out.Hash)
+	if err != nil {
+		return nil, err
+	}
+
+	return path.IpfsPath(c), nil
+}
+
+// AddWithWrapDirectory adds a file with the option `wrap-with-directory` enable.
+func (api *UnixfsAPI) AddWithWrapDirectory(ctx context.Context, f files.Node, opts ...caopts.UnixfsAddOption) (path.Resolved, error) {
+	options, _, err := caopts.UnixfsAddOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	mht, ok := mh.Codes[options.MhType]
+	if !ok {
+		return nil, fmt.Errorf("unknowm mhType %d", options.MhType)
+	}
+
+	req := api.core().Request("add").
+		Option("hash", mht).
+		Option("chunker", options.Chunker).
+		Option("cid-version", options.CidVersion).
+		Option("fscache", options.FsCache).
+		Option("inline", options.Inline).
+		Option("inline-limit", options.InlineLimit).
+		Option("nocopy", options.NoCopy).
+		Option("only-hash", options.OnlyHash).
+		Option("pin", options.Pin).
+		Option("silent", options.Silent).
+		Option("progress", options.Progress).
+		Option("wrap-with-directory", true)
+
+	if options.RawLeavesSet {
+		req.Option("raw-leaves", options.RawLeaves)
+	}
+
+	switch options.Layout {
+	case caopts.BalancedLayout:
+		// noop, default
+	case caopts.TrickleLayout:
+		req.Option("trickle", true)
+	}
+
+	var d files.Directory
+	if nf, ok := f.(*Node); ok {
+		d = files.NewMapDirectory(map[string]files.Node{nf.name: nf.Node})
+	} else {
+		d = files.NewMapDirectory(map[string]files.Node{"": f}) // unwrapped on the other side
+	}
+	req.Body(files.NewMultiFileReader(d, true))
 
 	var out addEvent
 	resp, err := req.Send(ctx)
