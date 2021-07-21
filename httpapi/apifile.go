@@ -44,6 +44,24 @@ func (api *UnixfsAPI) Get(ctx context.Context, p path.Path) (files.Node, error) 
 	}
 }
 
+// GetContent gets the content at the given IPFS path `p`. This function needs a boolean indicator for whether the content
+// is a file or a directory.
+func (api *UnixfsAPI) GetContent(ctx context.Context, p path.Path, isFile bool) (files.Node, error) {
+	if p.Mutable() { // use resolved path in case we are dealing with IPNS / MFS
+		var err error
+		p, err = api.core().ResolvePath(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if isFile {
+		return api.getFile(ctx, p, 0)
+	} else {
+		return api.getDir(ctx, p, 0)
+	}
+}
+
 type apiFile struct {
 	ctx  context.Context
 	core *HttpApi
