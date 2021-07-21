@@ -15,7 +15,7 @@ func TestClient_PinFile(t *testing.T) {
 		panic("already pinned")
 	}
 
-	err = ipfsClient.PinFile(cIdStr)
+	err = ipfsClient.PinCID(cIdStr)
 	if err != nil {
 		panic(err)
 	}
@@ -29,6 +29,43 @@ func TestClient_PinFile(t *testing.T) {
 	}
 
 	fmt.Println("File has been pinned with reason:", why)
+}
+
+func TestClient_UnPinFile(t *testing.T) {
+	cIdStr := "QmS2gWrAzp42swfjweNQgzHL4dC1UVR6a2rokPJxMfgPfM"
+	_, isPinned, err := ipfsClient.IsPinned(cIdStr)
+	if err != nil {
+		panic(err)
+	}
+	if !isPinned {
+		err = ipfsClient.PinCID(cIdStr)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	_, isPinned, err = ipfsClient.IsPinned(cIdStr)
+	if err != nil {
+		panic(err)
+	}
+	if !isPinned {
+		panic("should pin file")
+	}
+
+	err = ipfsClient.UnPinCID(cIdStr)
+	if err != nil {
+		panic(err)
+	}
+
+	_, isPinned, err = ipfsClient.IsPinned(cIdStr)
+	if err != nil {
+		panic(err)
+	}
+	if isPinned {
+		panic("should un-pin file")
+	}
+
+	fmt.Println("Success!!")
 }
 
 func TestClient_IsPinned(t *testing.T) {
