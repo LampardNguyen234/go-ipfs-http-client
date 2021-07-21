@@ -8,7 +8,7 @@ import (
 )
 
 // Get returns the content with the given cId.
-func (c *Client) Get(cIdStr string) (files.Node, error) {
+func (c *Client) Get(cIdStr string, isFile bool) (files.Node, error) {
 	unixFs, err := c.GetUnixFs()
 	if err != nil {
 		return nil, err
@@ -19,5 +19,5 @@ func (c *Client) Get(cIdStr string) (files.Node, error) {
 		return nil, err
 	}
 
-	return unixFs.Get(context.Background(), path.IpfsPath(cId))
+	return unixFs.GetContent(context.Background(), path.IpfsPath(cId), isFile)
 }

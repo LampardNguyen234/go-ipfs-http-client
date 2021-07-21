@@ -7,9 +7,9 @@ import (
 )
 
 func TestClient_Get(t *testing.T) {
-	cIdStr := "QmciSwhUJeCHUobsXYPF4jryKdej4PxadAxDxh4xxfmeYy"
+	cIdStr := "QmXwAzHmBLkSGLAnfqWXXshLQiJt6D2uHczoU6ea1EhmwQ"
 
-	fileNode, err := ipfsClient.Get(cIdStr)
+	fileNode, err := ipfsClient.Get(cIdStr, true)
 	if err != nil {
 		panic(err)
 	}
