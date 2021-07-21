@@ -10,7 +10,7 @@ type InfuraAccount struct {
 	ProjectSecret string `json:"ProjectSecret"`
 }
 
-func readInfuraKey(fileName string) (*InfuraAccount, error) {
+func ReadInfuraKey(fileName string) (*InfuraAccount, error) {
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 
 func TestReadInfuraKey(t *testing.T) {
 	fileName := ".secret"
-	infuraKey, err := readInfuraKey(fileName)
+	infuraKey, err := ReadInfuraKey(fileName)
 	if err != nil {
 		panic(err)
 	}
