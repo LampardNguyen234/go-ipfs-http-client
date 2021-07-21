@@ -3,7 +3,7 @@ package client
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/ipfs/go-ipfs-http-client/httpapi"
+	"github.com/LampardNguyen234/go-ipfs-http-client/httpapi"
 	"net/http"
 )
 
@@ -14,12 +14,19 @@ type Client struct {
 
 // NewLocalClient creates a client pointing to the local IPFS node.
 func NewLocalClient() (*Client, error) {
-	api, err := httpapi.NewLocalApi()
+	c := &http.Client{
+		Transport: &http.Transport{
+			Proxy:             http.ProxyFromEnvironment,
+			DisableKeepAlives: true,
+		},
+	}
+
+	client, err := httpapi.NewURLApiWithClient(LocalIPFS, c)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Client{api}, nil
+	return &Client{client}, nil
 }
 
 // NewClient returns a new Client pointing to the given url.
