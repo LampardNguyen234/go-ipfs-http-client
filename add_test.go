@@ -14,23 +14,10 @@ const (
 	testDataOutputDirectory = "./testdata/outputs/"
 )
 
-//func init() {
-//	log.Printf("This runs before test\n")
-//	var err error
-//	ipfsClient, err = NewLocalClient()
-//	if err != nil {
-//		panic(err)
-//	}
-//}
-
 func init() {
 	log.Printf("This runs before test\n")
-	infuraAccount, err := readInfuraKey(".secret")
-	if err != nil {
-		panic(err)
-	}
-
-	ipfsClient, err = NewInfuraClient(infuraAccount.ProjectId, infuraAccount.ProjectSecret)
+	var err error
+	ipfsClient, err = NewLocalClient()
 	if err != nil {
 		panic(err)
 	}
