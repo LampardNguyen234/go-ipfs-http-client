@@ -98,7 +98,7 @@ func TestClient_AddWithMetadata(t *testing.T) {
 		panic(err)
 	}
 
-	metadata := map[string]string {
+	metadata := map[string]interface{}{
 		"fileName": "readme",
 		"author": "Lampard",
 	}
@@ -129,7 +129,7 @@ func TestAddFileFromPath(t *testing.T) {
 func TestClient_AddFileFromPathWithMetadata(t *testing.T) {
 	fileName := "sample.jpg" // put the file inside the `testDataInputDirectory`
 
-	metadata := map[string]string {
+	metadata := map[string]interface{}{
 		"fileName": "readme",
 		"author": "Lampard",
 	}
